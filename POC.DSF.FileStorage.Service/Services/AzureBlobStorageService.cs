@@ -15,7 +15,7 @@ namespace POC.DSF.FileStorage.Service.Services
         {
             blobContainerClient = new(settings.Value.AzureBlobSettings.ConnectionString, settings.Value.AzureBlobSettings.BlobContainer);
         }
-        public async Task<(Stream, string)> Download(string fileName)
+        public async Task<(Stream, string)> DownloadAsync(string fileName)
         {
             if (string.IsNullOrWhiteSpace(fileName))
             {
@@ -26,7 +26,9 @@ namespace POC.DSF.FileStorage.Service.Services
             {
                 var blobClient = blobContainerClient.GetBlobClient(fileName);
                 BlobDownloadResult response = await blobClient.DownloadContentAsync();
-                return (response.Content.ToStream(), response.Details.ContentType);
+                var stream = response.Content.ToStream();
+                stream.Position = 0;
+                return (stream, response.Details.ContentType);
 
             }
             catch (RequestFailedException rfe)
@@ -35,7 +37,7 @@ namespace POC.DSF.FileStorage.Service.Services
             }
         }
 
-        public async Task Upload(Stream stream, string fileName, string contentType)
+        public async Task UploadAsync(Stream stream, string fileName, string contentType)
         {
             if (stream is null)
             {
