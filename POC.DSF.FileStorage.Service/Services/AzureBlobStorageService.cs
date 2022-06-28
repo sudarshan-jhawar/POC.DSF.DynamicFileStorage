@@ -35,9 +35,32 @@ namespace POC.DSF.FileStorage.Service.Services
             }
         }
 
-        public Task Upload(Stream stream, string fileName, string contentType)
+        public async Task Upload(Stream stream, string fileName, string contentType)
         {
-            throw new NotImplementedException();
+            if (stream is null)
+            {
+                throw new ArgumentNullException(nameof(stream));
+            }
+
+            if (string.IsNullOrWhiteSpace(fileName))
+            {
+                throw new ArgumentException($"'{nameof(fileName)}' cannot be null or whitespace.", nameof(fileName));
+            }
+
+            if (string.IsNullOrWhiteSpace(contentType))
+            {
+                throw new ArgumentException($"'{nameof(contentType)}' cannot be null or whitespace.", nameof(contentType));
+            }
+
+            try
+            {
+                var blobClient = blobContainerClient.GetBlobClient(fileName);
+                BlobContentInfo response = await blobClient.UploadAsync(stream, new BlobUploadOptions { HttpHeaders = new BlobHttpHeaders { ContentType = contentType } });
+            }
+            catch (RequestFailedException rfe)
+            {
+                throw new Exception($"Error in uploading file. Reason : {rfe.Message} Http Status : {rfe.Status}");
+            }
         }
     }
 }
