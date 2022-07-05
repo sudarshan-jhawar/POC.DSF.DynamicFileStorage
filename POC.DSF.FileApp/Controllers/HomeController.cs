@@ -23,6 +23,20 @@ namespace POC.DSF.FileApp.Controllers
         {
             return View();
         }
+        [HttpGet("{fileName}")]
+        public async Task<FileResult> GetFile(string fileName)
+        {
+            try
+            {
+                var response = await _httpClient.GetAsync(new Uri($"{_appSettings.FileStorageApiUrl}/api/FileStorage/{fileName}"));
+                return File(response.Content.ReadAsStream(), response.Content.Headers.ContentType.MediaType);
+            }
+            catch (Exception e)
+            {
+
+                throw;
+            }
+        }
 
         [HttpPost]
         public async Task<IActionResult> Submit(FileModel fileModel)
